@@ -481,7 +481,7 @@ pub mod query_builder {
             }).collect();
 
             query += " SET ";
-            query += assignments.join(" AND ").as_str();
+            query += assignments.join(", ").as_str();
 
             if let Some(ref conditions) = self.conditions {
                 query += " WHERE ";
@@ -655,8 +655,8 @@ mod tests {
             .set("karma", "0")
             .set("last_login", "1970-01-01")
             .build();
-        let possibility1 = "UPDATE users SET karma = 0 AND last_login = 1970-01-01;" == query;
-        let possibility2 = "UPDATE users SET last_login = 1970-01-01 AND karma = 0;" == query;
+        let possibility1 = "UPDATE users SET karma = 0, last_login = 1970-01-01;" == query;
+        let possibility2 = "UPDATE users SET last_login = 1970-01-01, karma = 0;" == query;
         assert!(possibility1 || possibility2);
     }
 
