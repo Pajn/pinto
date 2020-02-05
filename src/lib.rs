@@ -38,6 +38,7 @@ pub mod query_builder {
         table: &'a str,
         values: HashMap<&'a str, &'a str>,
         conditions: Option<Vec<&'a str>>,
+        returning: Option<Vec<&'a str>>,
     }
 
     /// A helper struct for `JOIN` clause
@@ -420,6 +421,7 @@ pub mod query_builder {
                 table: table,
                 values: HashMap::new(),
                 conditions: None,
+                returning: None,
             };
 
             query_builder
@@ -447,6 +449,24 @@ pub mod query_builder {
             self
         }
 
+        /// Specify desired table fields in result set
+        pub fn returning(&mut self, fields: &[&'a str]) -> &mut Self {
+            if self.returning.is_none() {
+                self.returning = Some(Vec::new());
+            }
+
+            match self.returning {
+                Some(ref mut current_fields) => {
+                    for field in fields {
+                        current_fields.push(field);
+                    }
+                },
+                None => unreachable!(),
+            }
+
+            self
+        }
+
         /// Generate SQL query (`String`) from subsequent method calls
         pub fn build(&self) -> String {
             let mut query = String::from("UPDATE ");
@@ -466,6 +486,11 @@ pub mod query_builder {
             if let Some(ref conditions) = self.conditions {
                 query += " WHERE ";
                 query += join(conditions, " AND ").as_str();
+            }
+
+            if let Some(ref fields) = self.returning {
+                query += " RETURNING ";
+                query += join(fields, ", ").as_str();
             }
 
             query += ";";
